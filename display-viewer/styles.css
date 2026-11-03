@@ -1,0 +1,30 @@
+:root { color-scheme: dark; font-family: system-ui, sans-serif; background: #000; color: #fff; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+[hidden] { display: none !important; }
+#stage { position: fixed; inset: 0; display: grid; place-items: center; background: #000; outline: none; }
+#stage img { display: block; width: min(100vw, 100vh); height: min(100vw, 100vh); object-fit: contain; image-rendering: pixelated; }
+.panel { position: fixed; inset: 24px; max-width: 640px; margin: auto; overflow: auto; padding: 20px; background: #101317; border: 2px solid #697786; border-radius: 12px; }
+header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+h1 { margin: 0; font-size: 26px; }
+header span, .hint, .note { color: #ccd5df; }
+header span { font-size: 15px; white-space: nowrap; }
+.hint { margin: 10px 0; font-size: 15px; line-height: 1.4; }
+#list-panel { display: flex; flex-direction: column; }
+#file-list { flex: 1; min-height: 0; overflow-y: auto; padding: 5px; }
+#file-list button { display: flex; justify-content: space-between; align-items: center; gap: 12px; width: 100%; min-height: 66px; margin-bottom: 10px; text-align: left; }
+#file-list button span:first-child { overflow-wrap: anywhere; }
+#file-list button[aria-selected="true"] { background: #203e52; border-color: #9ad9ff; }
+.current { color: #a8dfff; font-size: 14px; white-space: nowrap; }
+footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; font-size: 14px; color: #ccd5df; }
+button { min-height: 44px; border: 2px solid #667483; border-radius: 7px; background: #202830; color: #fff; font: inherit; font-size: 18px; padding: 7px 12px; cursor: pointer; }
+button[aria-pressed="true"] { border-color: #9ad9ff; background: #203e52; }
+button:focus { outline: 3px solid #fff; outline-offset: 2px; }
+.actions { display: grid; gap: 9px; }
+dl { margin: 12px 0; font-size: 14px; line-height: 1.5; }
+dl div { display: grid; grid-template-columns: 136px 1fr; gap: 10px; }
+dt { color: #a8b8c9; }
+dd { margin: 0; overflow-wrap: anywhere; }
+.note { margin: 8px 0 0; font-size: 13px; line-height: 1.45; }
+#error { position: fixed; z-index: 2; bottom: 0; left: 0; right: 0; margin: 0; padding: 12px; color: #fff; background: #8a1717; }
+@media (max-width: 420px) { .panel { inset: 8px; padding: 12px; } header { display: block; } h1 { font-size: 22px; } dl div { grid-template-columns: 110px 1fr; } }

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#000000">
+  <title>Display Viewer</title>
+  <link rel="icon" href="./icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./app.js" defer></script>
+</head>
+<body>
+  <main id="stage" tabindex="0" aria-label="패턴 화면. 좌우로 전환, Enter로 파일 목록 열기"></main>
+  <p id="error" role="alert" hidden></p>
+  <section id="list-panel" class="panel" aria-labelledby="list-title" hidden>
+    <header><h1 id="list-title">이미지 목록</h1><span id="file-count"></span></header>
+    <p class="hint">↑/↓ 선택 · 확인: 표시 · 취소: 기존 이미지로</p>
+    <div id="file-list" role="listbox" aria-label="patterns 폴더 이미지"></div>
+    <footer><span>파일명 순서 · → 설정</span><button id="open-settings">설정</button></footer>
+  </section>
+  <section id="settings" class="panel" aria-labelledby="title" hidden>
+    <header><h1 id="title">Display Viewer</h1><span>600 × 600 PNG</span></header>
+    <p class="hint">↑/↓ 선택 · 확인: 설정 변경 · 취소: 파일 목록으로</p>
+    <div class="actions">
+      <button id="wake" aria-pressed="true">화면 유지 요청: 켜짐</button>
+      <button id="auto-key" aria-pressed="false">자동 키 실험: 꺼짐</button>
+    </div>
+    <p class="hint">Viewer: ←/→ 이미지 전환 · 확인: 파일 목록</p>
+    <dl>
+      <div><dt>패턴</dt><dd id="pattern-status">로딩 중</dd></div>
+      <div><dt>표시 영역 / DPR</dt><dd id="viewport-status">—</dd></div>
+      <div><dt>Wake Lock</dt><dd id="wake-status">확인 중</dd></div>
+      <div><dt>자동 키</dt><dd id="key-status">꺼짐</dd></div>
+    </dl>
+    <p id="size-note" class="note"></p>
+    <p class="note">화면 유지 요청의 실제 효과는 안경에서 확인하세요. 자동 키는 10초마다 발생하는 합성 입력이며 sleep 방지를 보장하지 않습니다.</p>
+    <p class="note">패널 밝기: 공개 Web API 미확인. 안경의 시스템 설정에서 조절하세요. 이 앱은 이미지 밝기를 변경하지 않습니다.</p>
+  </section>
+  <noscript>Display Viewer requires JavaScript.</noscript>
+</body>
+</html>

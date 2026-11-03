@@ -1,0 +1,15 @@
+---
+layout: null
+---
+{ "files": [
+{%- assign image_files = site.static_files | sort: "name" -%}
+{%- assign separator = "" -%}
+{%- for file in image_files -%}
+  {%- assign folder = file.path | remove: file.name -%}
+  {%- assign extension = file.extname | downcase -%}
+  {%- if folder == "/display-viewer/patterns/" and extension == ".png" -%}
+    {{- separator -}}{{- file.name | jsonify -}}
+    {%- assign separator = "," -%}
+  {%- endif -%}
+{%- endfor -%}
+] }
