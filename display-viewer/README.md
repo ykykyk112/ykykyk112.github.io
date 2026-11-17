@@ -2,6 +2,47 @@
 
 Meta Ray-Ban Display용 600×600 PNG 패턴 뷰어. 앱에 npm 의존성이나 백엔드가 없으며, GitHub Pages의 기본 Jekyll 빌드가 이미지 폴더 목록을 생성합니다.
 
+
+## 색공간 선택 (2026-11-17)
+
+설정 창의 첫 버튼에서 **sRGB ↔ Display-P3**를 전환합니다. 기본값은 sRGB입니다.
+Viewer에서 확인(검지 탭) → 목록에서 우 → 설정에서 색공간 버튼 선택 후 확인을 누릅니다.
+상/하로 색공간·화면 유지·자동 키 버튼을 순환하며, 취소를 두 번 누르면 Viewer로 돌아갑니다.
+선택한 색공간은 즉시 반영되고 URL에 저장되므로 새로고침 후에도 유지됩니다.
+
+| 옵션 | P3 ICC를 포함한 입력 PNG 처리 |
+|---|---|
+| sRGB | 브라우저가 입력 프로파일을 해석하여 sRGB Canvas로 변환합니다. sRGB 밖의 색은 제한됩니다. |
+| Display-P3 | 브라우저가 입력 프로파일을 해석하여 Display-P3 Canvas로 표시합니다. |
+
+같은 파일을 유지한 채 모드를 바꿔 비교합니다. 예: `lut_R_p3.png`, `lut_G_p3.png`.
+기존 sRGB/프로파일 없는 파일을 P3 Canvas에 그리면 원래 sRGB 색을 유지하도록 변환하므로 P3 원색 시험이 되지 않습니다.
+이 버전은 RGB 숫자에 다른 색공간을 임의 지정하지 않고 **입력 ICC를 존중하는 출력 색공간 변환**을 수행합니다.
+수동 감마, 화이트밸런스, 밝기 보정은 적용하지 않습니다.
+
+- `?file=lut_R_p3.png&color=srgb`
+- `?file=lut_R_p3.png&color=display-p3`
+
+웹의 Display-P3는 DCI-P3와 원색 좌표가 같지만 D65 백색점과 sRGB 전달함수를 사용합니다. 영화용 DCI-P3의 백색점·감마 2.6 모드는 아닙니다.
+
+설정 창에서 다음을 구분해 표시합니다.
+
+- 현재 출력 요청: 실제 Canvas의 색공간을 확인한 후 표시합니다.
+- P3 Canvas API: 브라우저가 P3 Canvas 생성을 수락하는지 확인합니다.
+- 화면 색역 보고: `(color-gamut: srgb/p3/rec2020)`의 브라우저 보고값입니다.
+
+P3 API가 지원되어도 실제 출력 화면은 sRGB일 수 있습니다. API 수락이나 미디어 쿼리는 광학 측정값이 아닙니다.
+실제 안경에서 P3 색역이 출력되는지는 R·G의 xy 좌표를 측정해 확인해야 합니다.
+P3 요청이 거부되거나 실제 Canvas가 sRGB로 대체되면 패턴을 지우고 오류를 표시합니다.
+P3라고 표시하면서 sRGB로 조용히 대체하지 않습니다. 설정에서 sRGB로 전환하면 다시 표시할 수 있습니다.
+
+업로드 시 `index.html`, `app.js`, **새 파일 `color-renderer.js`**, `styles.css`를 함께 업데이트합니다.
+`patterns/`에는 P3 PNG를 업로드합니다. GitHub Pages의 `patterns.json` 자동 목록 템플릿은 유지합니다.
+새 버전 확인: 설정 하단 `빌드: color-20261117`. 배포 후 Web App을 새로고침하거나 다시 여세요.
+
+기술 근거: [HTML Canvas 색공간](https://html.spec.whatwg.org/multipage/canvas.html#colour-spaces-and-colour-space-conversion),
+[ICC Display-P3 정의](https://registry.color.org/rgb-registry/displayp3).
+
 ## 배포 위치
 
 - 목표 URL: https://ykykyk112.github.io/display-viewer/
@@ -31,6 +72,7 @@ ykykyk112.github.io/
 └─ display-viewer/
    ├─ index.html
    ├─ app.js
+   ├─ color-renderer.js            # ICC 기반 sRGB / Display-P3 Canvas 출력
    ├─ styles.css
    ├─ icon.svg
    ├─ patterns.json                # Jekyll이 배포 시 실제 목록으로 변환
@@ -81,6 +123,7 @@ python display-viewer/update-local-index.py
 |---|---|---|
 | `file` | `lut_W.png` 또는 첫 파일 | `?file=lut_R.png` |
 | `pattern` | 이전 버전 호환용 | `?pattern=R`도 인식 |
+| `color` | `srgb` | `?color=display-p3` |
 | `wake` | 요청 켜짐 | `?wake=0`으로 화면 유지 요청 중지 |
 | `autoKey` | 실험 꺼짐 | `?autoKey=1`로 합성 키 실험 활성화 |
 
@@ -97,7 +140,7 @@ python display-viewer/update-local-index.py
 | lut_G.png | 600×600 / RGB | a3e5bc77183c74d9f6bc9501dcc81b7573e032555890b7d77efc1f09d5e03319 |
 | lut_B.png | 600×600 / RGB | 3ead284f46103a9e721cf8ab9a6ca4d2b3caa8fdb9cc77077d5b977e4521d043 |
 
-PNG를 변환하지 않고 복사합니다. 로드 시 600×600인지 검사하고 다른 크기는 오류로 처리합니다. 메뉴를 닫으면 이미지 외의 앱 UI는 없습니다. 밝기 필터, 투명도, 전환 애니메이션을 적용하지 않습니다.
+원본 PNG 파일은 변경하지 않습니다. 표시할 때 브라우저가 ICC 프로파일을 반영해 선택한 Canvas 색공간으로 변환합니다. 로드 시 600×600인지 검사하고 다른 크기는 오류로 처리합니다. 메뉴를 닫으면 이미지 외의 앱 UI는 없습니다. 밝기 필터, 투명도, 전환 애니메이션을 적용하지 않습니다.
 
 표시 영역은 viewport 안의 최대 정사각형입니다. 600×600 CSS viewport에서는 600×600 CSS px로 표시합니다. 다른 화면에서는 종횡비를 유지하여 맞추고 남는 영역은 검정입니다. `image-rendering: pixelated`는 브라우저 스케일링 힌트이며, 하드웨어 보간이나 색상 변환을 제거하는 기능은 아닙니다. 메뉴에 표시 크기, viewport, DPR을 보여 줍니다.
 

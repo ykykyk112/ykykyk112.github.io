@@ -1,8 +1,12 @@
 {
   "files": [
     "lut_B.png",
+    "lut_B_p3.png",
     "lut_G.png",
+    "lut_G_p3.png",
     "lut_R.png",
-    "lut_W.png"
+    "lut_R_p3.png",
+    "lut_W.png",
+    "lut_W_p3.png"
   ]
 }

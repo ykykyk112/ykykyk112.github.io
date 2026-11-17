@@ -27,9 +27,23 @@
   let autoKeyTimer = null;
   let autoKeyCount = 0;
   let pageActive = true;
+  const colorModes = ["srgb", "display-p3"];
+  const colorLabels = { srgb: "sRGB", "display-p3": "Display-P3" };
+  let colorMode = colorModes.includes(query.get("color")) ? query.get("color") : "srgb";
+
+  function updateColorStatus() {
+    get("color-mode").textContent = `색공간: ${colorLabels[colorMode]}`;
+    get("color-note").textContent = colorMode === "srgb"
+      ? "파일의 ICC 프로파일을 반영해 sRGB로 변환합니다. sRGB 밖의 P3 색은 제한됩니다."
+      : "파일의 ICC 프로파일을 반영해 Display-P3로 표시합니다. 프로파일 없는 PNG는 sRGB 입력으로 해석됩니다.";
+    get("p3-canvas-status").textContent = window.PatternColorRenderer?.supportsP3Canvas()
+      ? "지원 보고 · 패널 출력 미검증" : "미지원 또는 확인 불가";
+    const gamut = ["rec2020", "p3", "srgb"].find((name) => matchMedia(`(color-gamut: ${name})`).matches);
+    get("gamut-status").textContent = gamut ? `${gamut} · 브라우저 보고값` : "지원 보고 없음";
+  }
 
   function updateSize() {
-    const image = stage.querySelector("img");
+    const image = stage.querySelector("img, canvas");
     const rect = image?.getBoundingClientRect();
     const width = rect ? Math.round(rect.width * 100) / 100 : 0;
     const height = rect ? Math.round(rect.height * 100) / 100 : 0;
@@ -45,14 +59,16 @@
   }
 
   function saveState() {
-    history.replaceState(stateFor(screen), "");
+    const url = new URL(location.href);
+    url.searchParams.set("color", colorMode);
+    history.replaceState(stateFor(screen), "", url);
   }
 
   function highlightTarget() {
     fileList.querySelectorAll("[data-file]").forEach((button) => {
       button.setAttribute("aria-selected", String(button.dataset.file === target));
       button.tabIndex = button.dataset.file === target ? 0 : -1;
-      button.querySelector(".current").textContent = button.dataset.file === stage.querySelector("img")?.alt ? "표시 중" : "";
+      button.querySelector(".current").textContent = button.dataset.file === stage.firstElementChild?.dataset.file ? "표시 중" : "";
     });
     get("file-count").textContent = `${files.indexOf(target) + 1} / ${files.length}`;
   }
@@ -69,7 +85,7 @@
     get("list-panel").hidden = screen !== "list";
     settings.hidden = screen !== "settings";
     if (screen === "list") focusTarget();
-    else if (screen === "settings") get("wake").focus();
+    else if (screen === "settings") { updateColorStatus(); get("color-mode").focus(); }
     else stage.focus({ preventScroll: true });
   }
 
@@ -149,6 +165,7 @@
     const promise = new Promise((resolve, reject) => {
       const image = new Image();
       image.alt = file;
+      image.dataset.file = file;
       image.draggable = false;
       const timer = setTimeout(() => {
         image.onload = image.onerror = null;
@@ -187,11 +204,15 @@
     // Do not leave a previous measurement pattern visible while a new one loads.
     stage.replaceChildren();
     error.hidden = true;
+    get("render-status").textContent = `${colorLabels[colorMode]} 요청 중`;
     get("pattern-status").textContent = `${file} 로딩 중`;
     try {
-      const image = await loadImage(file);
+      const mode = colorMode;
+      const source = await loadImage(file);
       if (sequence !== loadSequence) return;
+      const image = window.PatternColorRenderer.render(source, mode);
       stage.replaceChildren(image);
+      get("render-status").textContent = `Canvas: ${mode}`;
       displayed = file;
       loading = false;
       get("pattern-status").textContent = `${file} · 600 × 600`;
@@ -199,6 +220,7 @@
       url.searchParams.delete("pattern");
       url.searchParams.delete("menu");
       url.searchParams.set("file", file);
+      url.searchParams.set("color", colorMode);
       history.replaceState(stateFor(screen), "", url);
       updateSize();
       highlightTarget();
@@ -211,6 +233,7 @@
     } catch (cause) {
       if (sequence !== loadSequence) return;
       loading = false;
+      get("render-status").textContent = "표시 실패 · 대체 색공간 출력 없음";
       get("pattern-status").textContent = `${file} 실패`;
       error.textContent = `${file}: ${cause.message}`;
       error.hidden = false;
@@ -338,9 +361,15 @@
     renderScreen(state.screen);
     const desired = commit ?? state.file;
     if (screen === "viewer" && files.includes(desired) &&
-      (desired !== displayed || !stage.querySelector("img"))) {
+      (desired !== displayed || !stage.querySelector("img, canvas"))) {
       void selectPattern(desired);
-    } else if (screen === "viewer") saveState();
+    } else saveState();
+  });
+  get("color-mode").addEventListener("click", () => {
+    colorMode = colorModes[(colorModes.indexOf(colorMode) + 1) % colorModes.length];
+    updateColorStatus();
+    saveState();
+    if (requested) void selectPattern(requested);
   });
   get("open-settings").addEventListener("click", openSettings);
   stage.addEventListener("click", openList);
@@ -360,6 +389,10 @@
   addEventListener("pagehide", () => { pageActive = false; releaseWakeLock(); configureAutoKeys(); });
   addEventListener("pageshow", () => { pageActive = true; void requestWakeLock(); configureAutoKeys(); });
   addEventListener("resize", updateSize);
+  for (const gamut of ["srgb", "p3", "rec2020"]) {
+    matchMedia(`(color-gamut: ${gamut})`).addEventListener?.("change", updateColorStatus);
+  }
+  updateColorStatus();
   updateWakeButton();
   if (!wakeEnabled) get("wake-status").textContent = "꺼짐";
   configureAutoKeys();

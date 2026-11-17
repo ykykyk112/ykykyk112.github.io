@@ -6,8 +6,9 @@
   <meta name="theme-color" content="#000000">
   <title>Display Viewer</title>
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css">
-  <script src="./app.js" defer></script>
+  <link rel="stylesheet" href="./styles.css?v=color-20261117">
+  <script src="./color-renderer.js?v=color-20261117" defer></script>
+  <script src="./app.js?v=color-20261117" defer></script>
 </head>
 <body>
   <main id="stage" tabindex="0" aria-label="패턴 화면. 좌우로 전환, Enter로 파일 목록 열기"></main>
@@ -22,6 +23,7 @@
     <header><h1 id="title">Display Viewer</h1><span>600 × 600 PNG</span></header>
     <p class="hint">↑/↓ 선택 · 확인: 설정 변경 · 취소: 파일 목록으로</p>
     <div class="actions">
+      <button id="color-mode">색공간: sRGB</button>
       <button id="wake" aria-pressed="true">화면 유지 요청: 켜짐</button>
       <button id="auto-key" aria-pressed="false">자동 키 실험: 꺼짐</button>
     </div>
@@ -29,10 +31,15 @@
     <dl>
       <div><dt>패턴</dt><dd id="pattern-status">로딩 중</dd></div>
       <div><dt>표시 영역 / DPR</dt><dd id="viewport-status">—</dd></div>
+      <div><dt>현재 출력 요청</dt><dd id="render-status">—</dd></div>
+      <div><dt>P3 Canvas API</dt><dd id="p3-canvas-status">—</dd></div>
+      <div><dt>화면 색역 보고</dt><dd id="gamut-status">—</dd></div>
       <div><dt>Wake Lock</dt><dd id="wake-status">확인 중</dd></div>
       <div><dt>자동 키</dt><dd id="key-status">꺼짐</dd></div>
     </dl>
     <p id="size-note" class="note"></p>
+    <p id="color-note" class="note"></p>
+    <p class="note">P3 API 지원과 화면 색역 보고는 실제 안경의 P3 출력 보증이 아닙니다. R·G 색좌표를 측정해 비교하세요. 빌드: color-20261117</p>
     <p class="note">화면 유지 요청의 실제 효과는 안경에서 확인하세요. 자동 키는 10초마다 발생하는 합성 입력이며 sleep 방지를 보장하지 않습니다.</p>
     <p class="note">패널 밝기: 공개 Web API 미확인. 안경의 시스템 설정에서 조절하세요. 이 앱은 이미지 밝기를 변경하지 않습니다.</p>
   </section>
